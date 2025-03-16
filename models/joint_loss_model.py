@@ -190,6 +190,79 @@ def train(model, train_loader, val_loader, optimizer, criterion, device, epochs,
     }
     return results
 
+def plot_training_history(history, title="Training History", fold=None):
+    """
+    Plot training and validation metrics including all three accuracy measures
+    
+    Args:
+        history: Dictionary containing training history
+        title: Plot title
+        fold: Fold number (optional)
+    """
+    # Create a 2x2 grid of subplots
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
+    
+    # Plot losses
+    ax1.plot(history['train_losses'], label='Train Loss')
+    ax1.plot(history['val_losses'], label='Val Loss')
+    ax1.set_title('Loss')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss')
+    ax1.legend()
+    ax1.grid(True, linestyle='--', alpha=0.7)
+    
+    # Plot season accuracies
+    ax2.plot(history['season_accs'], label='Train Season Acc')
+    ax2.plot(history['val_season_accs'], label='Val Season Acc')
+    ax2.set_title('Season Accuracy')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Accuracy')
+    ax2.legend()
+    ax2.grid(True, linestyle='--', alpha=0.7)
+    
+    # Plot subtype accuracies
+    ax3.plot(history['subtype_accs'], label='Train Subtype Acc')
+    ax3.plot(history['val_subtype_accs'], label='Val Subtype Acc')
+    ax3.set_title('Subtype Accuracy')
+    ax3.set_xlabel('Epoch')
+    ax3.set_ylabel('Accuracy')
+    ax3.legend()
+    ax3.grid(True, linestyle='--', alpha=0.7)
+    
+    # Plot full accuracies
+    ax4.plot(history['full_accs'], label='Train Full Acc')
+    ax4.plot(history['val_full_accs'], label='Val Full Acc')
+    ax4.set_title('Full Accuracy')
+    ax4.set_xlabel('Epoch')
+    ax4.set_ylabel('Accuracy')
+    ax4.legend()
+    ax4.grid(True, linestyle='--', alpha=0.7)
+    
+    # Set common y-axis limits for the accuracy plots
+    max_acc = max([
+        max(history['season_accs'] + history['val_season_accs']),
+        max(history['subtype_accs'] + history['val_subtype_accs']),
+        max(history['full_accs'] + history['val_full_accs'])
+    ])
+    min_acc = min([
+        min(history['season_accs'] + history['val_season_accs']),
+        min(history['subtype_accs'] + history['val_subtype_accs']),
+        min(history['full_accs'] + history['val_full_accs'])
+    ])
+    
+    padding = (max_acc - min_acc) * 0.1
+    for ax in [ax2, ax3, ax4]:
+        ax.set_ylim(max(0, min_acc - padding), min(1.0, max_acc + padding))
+    
+    plt.suptitle(title, fontsize=16)
+    plt.tight_layout()
+    
+    # Save figure
+    filename = "training_history"
+    if fold is not None:
+        filename += f"_fold_{fold}"
+    plt.savefig(f"{filename}.png")
+    plt.show()
 
 def kfold_crossval(params, train_dataset, val_dataset, model_class, criterion, test_transform, device, n_splits=5):
     """
@@ -206,7 +279,7 @@ def kfold_crossval(params, train_dataset, val_dataset, model_class, criterion, t
     """
     print(f"\nEvaluating parameters: {params}")
 
-    labels = dataset.labels # Need labels for stratification
+    labels = train_dataset.labels # Need labels for stratification
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
     
     # Track metrics across folds
@@ -250,6 +323,7 @@ def kfold_crossval(params, train_dataset, val_dataset, model_class, criterion, t
         })
 
         print(f" Fold {fold+1} best val accuracy: {train_metrics['best_val_acc']:.4f} at epoch {train_metrics['best_epoch']:.4f}")
+        plot_training_history(fold_metrics[-1], title="Training History", fold=fold_metrics[-1]['fold'])
 
     # Calculate average metrics across folds
     avg_best_val_acc = sum(fold['best_val_acc'] for fold in fold_metrics) / len(fold_metrics)
