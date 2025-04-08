@@ -1,4 +1,4 @@
-# CS 4701: Practicum in Artificial Intelligence
+# Personal Color Analysis (using Deep Learning)
 
-### Project Title: Personal Color Analysis
+### For CS4701: Practicum in Artificial Intelligence
 #### Authors: James Kim, Derek Liu, Carla Flores
