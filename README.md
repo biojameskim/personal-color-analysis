@@ -27,6 +27,7 @@ This project explores the use of state-of-the-art deep learning models for perso
 
 * Fine-tuned **ViT-B/16** model on the Deep Armocromia dataset
 * Joint classification into **season**, **subtype**, and **12-class label**
+* Fine-tuned EfficientNet classification model on the 4 seasons
 * Custom **joint loss** and **hierarchical softmax** loss implementations
 * Stratified **5-fold cross-validation**, early stopping, and regularization
 * Modular design for training, evaluation, and inference
